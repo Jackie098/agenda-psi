@@ -18,8 +18,11 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 #### API de Pacientes
 - ✅ `POST /api/facials` - Registrar facial (com seleção manual de guia)
 - ✅ `GET /api/facials` - Listar histórico de faciais
+- ✅ `GET /api/activities` - Listar histórico consolidado de atividades
 - ✅ `POST /api/guides` - Criar guia
 - ✅ `GET /api/guides` - Listar guias
+- ✅ `PATCH /api/guides/:id` - Editar guia (data ou encerrar)
+- ✅ `DELETE /api/guides/:id` - Excluir guia (apenas sem faciais)
 - ✅ `POST /api/sessions` - Registrar consulta
 - ✅ `GET /api/sessions` - Listar consultas
 - ✅ `GET /api/balance` - Consultar saldo
@@ -55,6 +58,7 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Session (consultas realizadas)
 - ✅ PsychologistReference (referências de psicólogos)
 - ✅ PatientPsychologistLink (vínculos)
+- ✅ ActivityLog (histórico de atividades e eventos)
 
 #### Recursos
 - ✅ Migrations configuradas
@@ -69,6 +73,8 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Login (/auth/signin)
 - ✅ Registro (/auth/register)
 - ✅ Dashboard Paciente (/dashboard/patient)
+  - Cards de ação rápida (saldo, facial, consulta, status)
+  - Abas: Histórico, Guias, Psicólogos, Referências
 - ✅ Dashboard Psicólogo (/dashboard/psychologist)
 
 #### Componentes UI Base (ShadCN)
@@ -81,10 +87,10 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 
 #### Componentes Paciente
 - ✅ FacialRegistration - Botão para registrar facial (com seleção manual de guia)
-- ✅ FacialsHistory - Histórico completo de faciais registradas
-- ✅ GuidesList - Lista de guias com status
+- ✅ ActivityTimeline - Histórico consolidado de atividades (faciais, consultas, eventos de guias)
+- ✅ GuidesList - Lista de guias com edição e exclusão
 - ✅ AddGuideDialog - Dialog para adicionar guia
-- ✅ SessionsList - Histórico de consultas
+- ✅ EditGuideDialog - Dialog para editar/encerrar guia
 - ✅ AddSessionDialog - Dialog para registrar consulta (lista psicólogos e referências)
 - ✅ PsychologistLinks - Gerenciamento de vínculos (solicitação por email/WhatsApp)
 - ✅ ReferencesManager - Gerenciamento de referências e vinculação a psicólogos reais
@@ -135,6 +141,20 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Um psicólogo real só pode estar vinculado a uma referência por paciente
 - ✅ Desvinculação reverte sessões para usar apenas a referência
 
+#### Histórico de Atividades
+- ✅ Timeline unificada com faciais, consultas e eventos de guias
+- ✅ Filtros por data (range) e tipo de atividade
+- ✅ Eventos automáticos: criação, expiração e encerramento de guias
+- ✅ Ordenação cronológica decrescente (mais recente primeiro)
+- ✅ Badges e ícones diferenciados por tipo de atividade
+
+#### Gestão de Guias
+- ✅ Edição de data de validade (qualquer data permitida)
+- ✅ Encerramento manual de guias (créditos perdidos)
+- ✅ Exclusão de guias sem faciais registradas
+- ✅ Validação automática de status ao listar guias
+- ✅ Registro de eventos no histórico de atividades
+
 ## 🎨 Design e UX
 
 - ✅ Interface moderna e limpa
@@ -145,6 +165,9 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Confirmações para ações destrutivas
 - ✅ Validação de formulários
 - ✅ Mensagens de erro claras
+- ✅ Persistência de abas após recarregamento (F5)
+- ✅ URLs compartilháveis com aba específica
+- ✅ Navegação com histórico do navegador (voltar/avançar)
 
 ## 🔒 Segurança
 

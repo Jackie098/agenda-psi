@@ -7,6 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddGuideDialog } from "./add-guide-dialog";
+import { EditGuideDialog } from "./edit-guide-dialog";
+import { Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Guide {
   id: string;
@@ -30,6 +42,9 @@ export function GuidesList() {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [guideToEdit, setGuideToEdit] = useState<Guide | null>(null);
+  const [guideToDelete, setGuideToDelete] = useState<Guide | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchGuides();
@@ -57,6 +72,42 @@ export function GuidesList() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!guideToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/guides/${guideToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Guia excluída",
+          description: "A guia foi excluída com sucesso",
+        });
+        fetchGuides();
+        setGuideToDelete(null);
+      } else {
+        toast({
+          title: "Erro ao excluir guia",
+          description: data.error,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao excluir a guia",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -117,28 +168,53 @@ export function GuidesList() {
                   {getStatusBadge(guide.status)}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Créditos:</span>
-                  <span className="font-medium">
-                    {guide.usedCredits} / {guide.totalCredits} usados
-                  </span>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Créditos:</span>
+                    <span className="font-medium">
+                      {guide.usedCredits} / {guide.totalCredits} usados
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Disponíveis:</span>
+                    <span className="font-medium text-primary">
+                      {guide.totalCredits - guide.usedCredits} créditos
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Validade:</span>
+                    <span className="font-medium">
+                      {new Date(guide.expirationDate).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Faciais:</span>
+                    <span className="font-medium">{guide.facialRecords.length}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Disponíveis:</span>
-                  <span className="font-medium text-primary">
-                    {guide.totalCredits - guide.usedCredits} créditos
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Validade:</span>
-                  <span className="font-medium">
-                    {new Date(guide.expirationDate).toLocaleDateString("pt-BR")}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Faciais:</span>
-                  <span className="font-medium">{guide.facialRecords.length}</span>
+
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setGuideToEdit(guide)}
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                  {guide.facialRecords.length === 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setGuideToDelete(guide)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -154,6 +230,35 @@ export function GuidesList() {
           setShowAddDialog(false);
         }}
       />
+
+      <EditGuideDialog
+        guide={guideToEdit}
+        open={!!guideToEdit}
+        onOpenChange={(open) => !open && setGuideToEdit(null)}
+        onSuccess={fetchGuides}
+      />
+
+      <AlertDialog open={!!guideToDelete} onOpenChange={(open) => !open && setGuideToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a guia #{guideToDelete?.number}?
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Excluindo..." : "Sim, Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

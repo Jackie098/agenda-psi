@@ -37,6 +37,14 @@ enum RegisteredBy {
   PSYCHOLOGIST
 }
 
+enum ActivityType {
+  FACIAL
+  SESSION
+  GUIDE_EXPIRED
+  GUIDE_CLOSED
+  GUIDE_CREATED
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -63,6 +71,7 @@ model Patient {
   sessions                 Session[]
   psychologistReferences   PsychologistReference[]
   patientPsychologistLinks PatientPsychologistLink[]
+  activityLogs             ActivityLog[]
 
   @@map("patients")
 }
@@ -182,4 +191,21 @@ model PatientPsychologistLink {
   @@index([psychologistId])
   @@index([status])
   @@map("patient_psychologist_links")
+}
+
+model ActivityLog {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  metadata    Json?
+  occurredAt  DateTime
+  patientId   String
+  createdAt   DateTime     @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([type])
+  @@index([occurredAt])
+  @@map("activity_logs")
 }

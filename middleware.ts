@@ -10,6 +10,7 @@ export const config = {
     "/api/guides/:path*",
     "/api/facials/:path*",
     "/api/sessions/:path*",
+    "/api/activities/:path*",
     "/api/psychologists/:path*",
     "/api/links/:path*",
     "/api/references/:path*",

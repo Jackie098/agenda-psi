@@ -166,17 +166,17 @@ export function FacialRegistration({ onSuccess }: FacialRegistrationProps) {
       <Button
         onClick={handleRegisterFacial}
         disabled={isLoading}
-        className="w-full"
-        size="lg"
+        className="w-full bg-green-600 hover:bg-green-700 text-white"
+        size="default"
       >
-        {isLoading ? "Registrando..." : "Bater Facial"}
+        {isLoading ? "Registrando..." : "Confirmar"}
       </Button>
 
-      <p className="text-xs text-muted-foreground">
-        +1 crédito no saldo
-        {activeGuides.length > 1 && " • Usando guia selecionada"}
-        {activeGuides.length === 1 && ` • Guia #${activeGuides[0].number}`}
-      </p>
+      {activeGuides.length === 1 && (
+        <p className="text-xs text-muted-foreground text-center">
+          Guia #{activeGuides[0].number}
+        </p>
+      )}
     </div>
   );
 }
