@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 interface Link {
@@ -25,6 +27,9 @@ export function PsychologistLinks() {
   const { toast } = useToast();
   const [links, setLinks] = useState<Link[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [requestEmail, setRequestEmail] = useState("");
+  const [requestWhatsapp, setRequestWhatsapp] = useState("");
 
   useEffect(() => {
     fetchLinks();
@@ -124,6 +129,62 @@ export function PsychologistLinks() {
     }
   };
 
+  const handleRequestLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!requestEmail && !requestWhatsapp) {
+      toast({
+        title: "Erro",
+        description: "Preencha email ou WhatsApp",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRequesting(true);
+
+    try {
+      const response = await fetch("/api/links/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: requestEmail || undefined,
+          whatsapp: requestWhatsapp || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: "Erro ao solicitar vínculo",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: data.message || "Solicitação enviada!",
+        description: data.status === "ACCEPTED" 
+          ? "O psicólogo aceitou automaticamente o vínculo"
+          : "Aguarde a resposta do psicólogo",
+      });
+
+      setRequestEmail("");
+      setRequestWhatsapp("");
+      fetchLinks();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao solicitar vínculo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       PENDING: "secondary",
@@ -152,6 +213,53 @@ export function PsychologistLinks() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Meus Psicólogos</h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Solicitar Vínculo com Psicólogo</CardTitle>
+          <CardDescription>
+            Informe o email ou WhatsApp do psicólogo para solicitar vínculo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleRequestLink} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="request-email">Email do Psicólogo</Label>
+                <Input
+                  id="request-email"
+                  type="email"
+                  placeholder="psicologo@example.com"
+                  value={requestEmail}
+                  onChange={(e) => setRequestEmail(e.target.value)}
+                  disabled={isRequesting}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="request-whatsapp">WhatsApp do Psicólogo</Label>
+                <Input
+                  id="request-whatsapp"
+                  type="text"
+                  placeholder="(00) 00000-0000"
+                  value={requestWhatsapp}
+                  onChange={(e) => setRequestWhatsapp(e.target.value)}
+                  disabled={isRequesting}
+                />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Preencha pelo menos um dos campos acima
+            </p>
+            <Button type="submit" disabled={isRequesting} className="w-full">
+              {isRequesting ? "Solicitando..." : "Solicitar Vínculo"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center justify-between pt-4">
+        <h3 className="text-xl font-semibold">Vínculos Existentes</h3>
       </div>
 
       {links.length === 0 ? (

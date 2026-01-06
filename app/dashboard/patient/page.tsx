@@ -13,6 +13,7 @@ import { FacialRegistration } from "@/components/patient/facial-registration";
 import { GuidesList } from "@/components/patient/guides-list";
 import { SessionsList } from "@/components/patient/sessions-list";
 import { PsychologistLinks } from "@/components/patient/psychologist-links";
+import { ReferencesManager } from "@/components/patient/references-manager";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
@@ -127,6 +128,7 @@ export default function PatientDashboard() {
           <TabsTrigger value="guides">Guias</TabsTrigger>
           <TabsTrigger value="sessions">Consultas</TabsTrigger>
           <TabsTrigger value="psychologists">Psicólogos</TabsTrigger>
+          <TabsTrigger value="references">Referências</TabsTrigger>
         </TabsList>
 
         <TabsContent value="guides" className="space-y-4">
@@ -139,6 +141,10 @@ export default function PatientDashboard() {
 
         <TabsContent value="psychologists" className="space-y-4">
           <PsychologistLinks />
+        </TabsContent>
+
+        <TabsContent value="references" className="space-y-4">
+          <ReferencesManager />
         </TabsContent>
       </Tabs>
     </div>
