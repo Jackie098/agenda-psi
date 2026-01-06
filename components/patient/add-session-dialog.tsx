@@ -230,8 +230,11 @@ export function AddSessionDialog({ onSuccess }: AddSessionDialogProps) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="w-full">
-        Registrar Consulta
+      <Button 
+        onClick={() => setOpen(true)} 
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        Registrar
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
