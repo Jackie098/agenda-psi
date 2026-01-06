@@ -186,8 +186,57 @@ POST /api/facials
 - **Indicador visual:** ⭐ mostra qual é a guia padrão
 - **Responsivo:** Funciona bem em mobile e desktop
 
+## 📜 Histórico de Faciais
+
+Além da escolha de guia, foi implementado um **histórico completo** de todas as faciais registradas pelo paciente.
+
+### Localização
+Dashboard do Paciente > Aba "Histórico de Faciais"
+
+### Informações Exibidas
+Para cada facial registrada, o histórico mostra:
+- **Data:** Formato DD/MM/AAAA
+- **Hora:** Formato HH:MM (momento exato do clique)
+- **Guia:** Número da guia utilizada
+- **Empresa:** Nome da empresa/convênio
+- **Créditos:** Badge mostrando +1 para cada facial
+
+### Funcionalidades
+- **Ordenação:** Faciais mais recentes aparecem primeiro
+- **Contagem:** Badge com total de faciais registradas
+- **Atualização:** Refresh automático após novo registro
+- **Botão manual:** Ícone para atualizar a lista manualmente
+- **Estado vazio:** Mensagem motivacional quando não há faciais
+
+### Exemplo de Visualização
+
+```
+┌─────────────────────────────────────────────────────┐
+│ Histórico de Faciais                    [15 faciais]│
+├─────────────────────────────────────────────────────┤
+│ Data e Hora    │ Guia    │ Empresa   │ Créditos    │
+├─────────────────────────────────────────────────────┤
+│ 06/01/2026     │ #12345  │ Unimed    │    +1       │
+│ 14:30          │         │           │             │
+├─────────────────────────────────────────────────────┤
+│ 05/01/2026     │ #12345  │ Unimed    │    +1       │
+│ 09:15          │         │           │             │
+├─────────────────────────────────────────────────────┤
+│ 04/01/2026     │ #67890  │ Amil      │    +1       │
+│ 16:45          │         │           │             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Benefícios
+- ✅ **Transparência:** Paciente vê exatamente quando e qual guia usou
+- ✅ **Rastreabilidade:** Auditoria completa de créditos ganhos
+- ✅ **Histórico permanente:** Dados persistem mesmo após guia expirar
+- ✅ **Integração:** Atualização automática com o sistema de registro
+
 ---
 
 **Implementado em:** 2025-01-06  
-**Componente:** `components/patient/facial-registration.tsx`
+**Componentes:** 
+- `components/patient/facial-registration.tsx` (registro com seleção de guia)
+- `components/patient/facials-history.tsx` (histórico de faciais)
 

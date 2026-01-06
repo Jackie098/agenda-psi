@@ -14,6 +14,7 @@ import { GuidesList } from "@/components/patient/guides-list";
 import { SessionsList } from "@/components/patient/sessions-list";
 import { PsychologistLinks } from "@/components/patient/psychologist-links";
 import { ReferencesManager } from "@/components/patient/references-manager";
+import { FacialsHistory } from "@/components/patient/facials-history";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
@@ -21,6 +22,7 @@ export default function PatientDashboard() {
   const { toast } = useToast();
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [facialsRefreshTrigger, setFacialsRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -53,6 +55,11 @@ export default function PatientDashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFacialSuccess = () => {
+    fetchBalance();
+    setFacialsRefreshTrigger(prev => prev + 1);
   };
 
   if (status === "loading" || isLoading) {
@@ -107,7 +114,7 @@ export default function PatientDashboard() {
             <CardTitle className="text-sm font-medium">Registrar Facial</CardTitle>
           </CardHeader>
           <CardContent>
-            <FacialRegistration onSuccess={fetchBalance} />
+            <FacialRegistration onSuccess={handleFacialSuccess} />
           </CardContent>
         </Card>
 
@@ -127,6 +134,7 @@ export default function PatientDashboard() {
         <TabsList>
           <TabsTrigger value="guides">Guias</TabsTrigger>
           <TabsTrigger value="sessions">Consultas</TabsTrigger>
+          <TabsTrigger value="facials">Histórico de Faciais</TabsTrigger>
           <TabsTrigger value="psychologists">Psicólogos</TabsTrigger>
           <TabsTrigger value="references">Referências</TabsTrigger>
         </TabsList>
@@ -137,6 +145,10 @@ export default function PatientDashboard() {
 
         <TabsContent value="sessions" className="space-y-4">
           <SessionsList />
+        </TabsContent>
+
+        <TabsContent value="facials" className="space-y-4">
+          <FacialsHistory refreshTrigger={facialsRefreshTrigger} />
         </TabsContent>
 
         <TabsContent value="psychologists" className="space-y-4">

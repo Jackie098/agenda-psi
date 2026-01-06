@@ -16,8 +16,8 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Helpers de autenticação (requireAuth, requireRole, etc)
 
 #### API de Pacientes
-- ✅ `POST /api/facials` - Registrar facial
-- ✅ `GET /api/facials` - Listar faciais
+- ✅ `POST /api/facials` - Registrar facial (com seleção manual de guia)
+- ✅ `GET /api/facials` - Listar histórico de faciais
 - ✅ `POST /api/guides` - Criar guia
 - ✅ `GET /api/guides` - Listar guias
 - ✅ `POST /api/sessions` - Registrar consulta
@@ -25,6 +25,8 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ `GET /api/balance` - Consultar saldo
 - ✅ `POST /api/references` - Criar referência de psicólogo
 - ✅ `GET /api/references` - Listar referências
+- ✅ `PUT /api/references/:id/link` - Vincular referência a psicólogo real
+- ✅ `DELETE /api/references/:id/link` - Desvincular referência
 
 #### API de Psicólogos
 - ✅ `GET /api/psychologists/patients` - Listar pacientes vinculados
@@ -78,12 +80,14 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Form components
 
 #### Componentes Paciente
-- ✅ FacialRegistration - Botão para registrar facial
+- ✅ FacialRegistration - Botão para registrar facial (com seleção manual de guia)
+- ✅ FacialsHistory - Histórico completo de faciais registradas
 - ✅ GuidesList - Lista de guias com status
 - ✅ AddGuideDialog - Dialog para adicionar guia
 - ✅ SessionsList - Histórico de consultas
-- ✅ AddSessionDialog - Dialog para registrar consulta
-- ✅ PsychologistLinks - Gerenciamento de vínculos
+- ✅ AddSessionDialog - Dialog para registrar consulta (lista psicólogos e referências)
+- ✅ PsychologistLinks - Gerenciamento de vínculos (solicitação por email/WhatsApp)
+- ✅ ReferencesManager - Gerenciamento de referências e vinculação a psicólogos reais
 
 #### Componentes Psicólogo
 - ✅ PatientsList - Lista de pacientes vinculados
@@ -102,7 +106,9 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Consulta 30min subtrai 1 crédito do saldo
 - ✅ Consulta 50min subtrai 2 créditos do saldo
 - ✅ Saldo pode ser negativo sem limite
-- ✅ Seleção automática de guia (FIFO)
+- ✅ Seleção automática de guia (FIFO - mais antiga primeiro)
+- ✅ Seleção manual de guia quando múltiplas guias estão ativas
+- ✅ Histórico de faciais com data, hora e guia utilizada
 
 #### Restrições e Validações
 - ✅ Aviso (não bloqueio) ao registrar mais de 1 facial/dia
@@ -114,10 +120,20 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Referências de psicólogos podem ser criadas antes do vínculo
 
 #### Vínculos
-- ✅ Solicitação pode partir de qualquer lado
+- ✅ Solicitação pode partir de qualquer lado (por email ou WhatsApp)
 - ✅ Requer aceitação da outra parte
 - ✅ Status: PENDING/ACCEPTED/REJECTED
+- ✅ Aceitação automática para solicitações mútuas
+- ✅ Bloqueio temporário (7 dias) após rejeição
 - ✅ Qualquer parte pode remover vínculo aceito
+- ✅ Validação contra duplicatas e auto-vinculação
+
+#### Referências de Psicólogos
+- ✅ Paciente pode criar referências antes de ter vínculo
+- ✅ Referências podem ser vinculadas a psicólogos reais após estabelecer vínculo
+- ✅ Sessões passadas são atualizadas ao vincular referência
+- ✅ Um psicólogo real só pode estar vinculado a uma referência por paciente
+- ✅ Desvinculação reverte sessões para usar apenas a referência
 
 ## 🎨 Design e UX
 
