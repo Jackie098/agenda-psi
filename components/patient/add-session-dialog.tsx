@@ -25,21 +25,38 @@ interface Reference {
   };
 }
 
+interface LinkedPsychologist {
+  id: string;
+  user: {
+    name: string;
+  };
+}
+
+interface PsychologistOption {
+  id: string;
+  name: string;
+  type: "psychologist" | "reference";
+  psychologistId?: string;
+  referenceId?: string;
+}
+
 export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDialogProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [references, setReferences] = useState<Reference[]>([]);
+  const [linkedPsychologists, setLinkedPsychologists] = useState<LinkedPsychologist[]>([]);
+  const [psychologistOptions, setPsychologistOptions] = useState<PsychologistOption[]>([]);
   const [showNewReference, setShowNewReference] = useState(false);
   const [newReferenceName, setNewReferenceName] = useState("");
   const [formData, setFormData] = useState({
     scheduledAt: "",
     duration: "50",
-    psychologistReferenceId: "",
+    selectedOption: "", // ID da opção selecionada
   });
 
   useEffect(() => {
     if (open) {
-      fetchReferences();
+      fetchData();
       // Set default date/time to now
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -50,17 +67,64 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
     }
   }, [open]);
 
-  const fetchReferences = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch("/api/references");
-      const data = await response.json();
-      
-      if (response.ok) {
-        setReferences(data);
+      // Buscar referências
+      const referencesResponse = await fetch("/api/references");
+      const referencesData = await referencesResponse.json();
+
+      // Buscar vínculos aceitos
+      const linksResponse = await fetch("/api/links");
+      const linksData = await linksResponse.json();
+
+      if (referencesResponse.ok) {
+        setReferences(referencesData);
+      }
+
+      if (linksResponse.ok) {
+        const acceptedLinks = linksData.filter((link: any) => link.status === "ACCEPTED");
+        const psychologists = acceptedLinks.map((link: any) => link.psychologist);
+        setLinkedPsychologists(psychologists);
+      }
+
+      // Montar lista de opções evitando duplicatas
+      if (referencesResponse.ok && linksResponse.ok) {
+        buildPsychologistOptions(referencesData, linksData);
       }
     } catch (error) {
-      console.error("Error fetching references:", error);
+      console.error("Error fetching data:", error);
     }
+  };
+
+  const buildPsychologistOptions = (refs: Reference[], links: any[]) => {
+    const options: PsychologistOption[] = [];
+    const acceptedLinks = links.filter((link: any) => link.status === "ACCEPTED");
+    const linkedPsychIds = new Set<string>();
+
+    // Adicionar psicólogos vinculados reais
+    acceptedLinks.forEach((link: any) => {
+      linkedPsychIds.add(link.psychologist.id);
+      options.push({
+        id: `psych-${link.psychologist.id}`,
+        name: link.psychologist.user.name,
+        type: "psychologist",
+        psychologistId: link.psychologist.id,
+      });
+    });
+
+    // Adicionar referências que NÃO estão vinculadas a psicólogos reais
+    refs.forEach((ref) => {
+      if (!ref.linkedPsychologist || !linkedPsychIds.has(ref.linkedPsychologist.id)) {
+        options.push({
+          id: `ref-${ref.id}`,
+          name: ref.name,
+          type: "reference",
+          referenceId: ref.id,
+        });
+      }
+    });
+
+    setPsychologistOptions(options);
   };
 
   const handleCreateReference = async () => {
@@ -76,8 +140,8 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
       const data = await response.json();
 
       if (response.ok) {
-        setReferences([...references, data]);
-        setFormData({ ...formData, psychologistReferenceId: data.id });
+        await fetchData(); // Recarregar dados
+        setFormData({ ...formData, selectedOption: `ref-${data.id}` });
         setNewReferenceName("");
         setShowNewReference(false);
         toast({
@@ -99,14 +163,35 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
     setIsLoading(true);
 
     try {
+      // Encontrar a opção selecionada
+      const selectedOption = psychologistOptions.find(opt => opt.id === formData.selectedOption);
+      
+      if (!selectedOption) {
+        toast({
+          title: "Erro",
+          description: "Selecione um psicólogo",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Preparar dados baseado no tipo
+      const sessionData: any = {
+        duration: formData.duration,
+        scheduledAt: new Date(formData.scheduledAt).toISOString(),
+      };
+
+      if (selectedOption.type === "psychologist") {
+        sessionData.psychologistId = selectedOption.psychologistId;
+      } else {
+        sessionData.psychologistReferenceId = selectedOption.referenceId;
+      }
+
       const response = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          duration: formData.duration,
-          scheduledAt: new Date(formData.scheduledAt).toISOString(),
-        }),
+        body: JSON.stringify(sessionData),
       });
 
       const data = await response.json();
@@ -128,7 +213,7 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
       setFormData({
         scheduledAt: "",
         duration: "50",
-        psychologistReferenceId: "",
+        selectedOption: "",
       });
 
       onSuccess();
@@ -182,26 +267,30 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="psychologistReferenceId">Psicólogo</Label>
+            <Label htmlFor="selectedOption">Psicólogo</Label>
             {!showNewReference ? (
               <>
                 <Select
-                  value={formData.psychologistReferenceId}
+                  value={formData.selectedOption}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, psychologistReferenceId: value })
+                    setFormData({ ...formData, selectedOption: value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o psicólogo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {references.map((ref) => (
-                      <SelectItem key={ref.id} value={ref.id}>
-                        {ref.linkedPsychologist?.user.name || ref.name}
+                    {psychologistOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
+                        {option.type === "psychologist" && " ✓"}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  ✓ = Psicólogo vinculado
+                </p>
                 <Button
                   type="button"
                   variant="link"
@@ -209,7 +298,7 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
                   onClick={() => setShowNewReference(true)}
                   className="px-0"
                 >
-                  + Adicionar novo psicólogo
+                  + Adicionar novo psicólogo (referência)
                 </Button>
               </>
             ) : (
