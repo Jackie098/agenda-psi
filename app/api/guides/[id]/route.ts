@@ -50,7 +50,19 @@ export async function PATCH(
 
     // Se estiver atualizando a data
     if (data.expirationDate) {
-      updateData.expirationDate = new Date(data.expirationDate);
+      const newExpirationDate = new Date(data.expirationDate);
+      updateData.expirationDate = newExpirationDate;
+
+      // Se a nova data for futura, guia estiver expirada e ainda tiver créditos,
+      // reativar a guia
+      const now = new Date();
+      const hasCreditsAvailable = guide.usedCredits < guide.totalCredits;
+      const isExpired = guide.status === GuideStatus.EXPIRED;
+      const isFutureDate = newExpirationDate > now;
+
+      if (isExpired && hasCreditsAvailable && isFutureDate) {
+        updateData.status = GuideStatus.ACTIVE;
+      }
     }
 
     // Atualizar guia

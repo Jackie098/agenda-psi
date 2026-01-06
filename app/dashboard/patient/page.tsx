@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +18,13 @@ import { ActivityTimeline } from "@/components/patient/activity-timeline";
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Ler a aba da URL ou usar 'activities' como padrão
+  const currentTab = searchParams.get("tab") || "activities";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -57,6 +61,13 @@ export default function PatientDashboard() {
 
   const handleFacialSuccess = () => {
     fetchBalance();
+  };
+
+  const handleTabChange = (value: string) => {
+    // Atualizar a URL com o parâmetro tab
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", value);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   if (status === "loading" || isLoading) {
@@ -127,7 +138,7 @@ export default function PatientDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="activities" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="activities">Histórico de Atividades</TabsTrigger>
           <TabsTrigger value="guides">Guias</TabsTrigger>

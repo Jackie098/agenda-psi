@@ -19,16 +19,32 @@ Pacientes podem atualizar a data de validade de qualquer guia.
 
 **Regras:**
 - Qualquer data pode ser definida (inclusive no passado)
-- Status da guia não muda automaticamente ao editar data
-- Guias expiradas continuam expiradas até próxima verificação
-- Validação ocorre apenas no próximo GET de guias
+- **Reativação automática**: Se a guia estiver expirada, ainda tiver créditos disponíveis e a nova data for futura, o status volta automaticamente para ACTIVE
+- Guias completas (sem créditos) permanecem completas mesmo com data futura
+- Validação de expiração ocorre também no próximo GET de guias
 
-**Exemplo:**
+**Exemplo 1 - Guia com créditos:**
 ```
 Guia expirada em: 01/12/2025
-Nova data definida: 31/03/2026
-Status: Permanece EXPIRED até próximo carregamento
-Ao recarregar: Status volta para ACTIVE automaticamente
+Créditos: 3/8 (5 disponíveis)
+Nova data definida: 31/03/2026 (futura)
+Resultado: Status muda IMEDIATAMENTE para ACTIVE ✅
+```
+
+**Exemplo 2 - Guia sem créditos:**
+```
+Guia completa em: 01/12/2025
+Créditos: 8/8 (0 disponíveis)
+Nova data definida: 31/03/2026 (futura)
+Resultado: Status permanece COMPLETED (sem créditos) ❌
+```
+
+**Exemplo 3 - Data no passado:**
+```
+Guia expirada em: 01/12/2025
+Créditos: 3/8 (5 disponíveis)
+Nova data definida: 01/11/2025 (passado)
+Resultado: Status permanece EXPIRED (data no passado) ❌
 ```
 
 #### Encerrar Guia Antecipadamente
@@ -333,6 +349,20 @@ Exclusão de guia **não** gera evento no ActivityLog, pois:
 6. Sistema atualiza e exibe toast de sucesso
 7. Lista de guias recarrega com data corrigida
 
+### Cenário 1.1: Reativar Guia Expirada com Créditos
+
+1. Paciente tem guia EXPIRADA em 01/12/2025
+2. Guia ainda tem 5 créditos disponíveis (3/8 usados)
+3. Clica em "Editar" na guia expirada
+4. Seleciona data futura: 31/03/2026
+5. Clica em "Salvar Alterações"
+6. Sistema:
+   - Atualiza data para 31/03/2026
+   - **Muda status de EXPIRED para ACTIVE automaticamente**
+   - Exibe toast: "Guia atualizada com sucesso"
+7. Lista recarrega mostrando guia ATIVA com badge verde
+8. Paciente pode usar os 5 créditos restantes
+
 ### Cenário 2: Excluir Guia Cadastrada por Engano
 
 1. Paciente cadastrou guia duplicada (sem faciais)
@@ -390,13 +420,21 @@ Ao encerrar uma guia antecipadamente, os créditos restantes não são transferi
 3. **Controle**: Paciente tem autonomia sobre seus dados
 4. **Sem Efeito Retroativo**: Mudar data não altera faciais já registradas
 
+### Por que Reativar Automaticamente?
+
+1. **UX Intuitiva**: Usuário espera que guia volte a funcionar ao estender validade
+2. **Sem Créditos = Sem Reativação**: Guias completas não podem ser usadas de qualquer forma
+3. **Data Passada = Expirada**: Lógica consistente com validação automática
+4. **Sem Necessidade de Duas Ações**: Não precisa editar data + manualmente mudar status
+
 ## Validações e Regras
 
 ### Edição de Data
 - ✅ Qualquer data (passado, presente, futuro)
-- ✅ Não muda status automaticamente
-- ✅ Validação na próxima consulta de guias
+- ✅ Reativação automática se: expirada + com créditos + data futura
+- ✅ Validação de expiração também na próxima consulta
 - ❌ Não aceita datas inválidas (formato)
+- ❌ Guias completas não são reativadas (mesmo com data futura)
 
 ### Encerramento Manual
 - ✅ Apenas guias ACTIVE
@@ -415,15 +453,18 @@ Ao encerrar uma guia antecipadamente, os créditos restantes não são transferi
 ## Testes Recomendados
 
 1. **Editar data válida**: Deve atualizar com sucesso
-2. **Editar data no passado**: Deve aceitar
-3. **Encerrar guia ativa**: Deve criar evento GUIDE_CLOSED
-4. **Tentar encerrar guia completa**: Botão não deve aparecer
-5. **Excluir guia sem faciais**: Deve excluir com sucesso
-6. **Tentar excluir guia com faciais**: Deve mostrar erro
-7. **Botão excluir não aparece**: Quando há faciais
-8. **Confirmação de encerramento**: Deve mostrar créditos restantes
-9. **Confirmação de exclusão**: Deve mostrar número da guia
-10. **Atualização de lista**: Deve recarregar após edição/exclusão
+2. **Editar data no passado**: Deve aceitar e manter status
+3. **Editar data futura em guia expirada com créditos**: Deve reativar para ACTIVE
+4. **Editar data futura em guia completa**: Status deve permanecer COMPLETED
+5. **Encerrar guia ativa**: Deve criar evento GUIDE_CLOSED
+6. **Tentar encerrar guia completa**: Botão não deve aparecer
+7. **Excluir guia sem faciais**: Deve excluir com sucesso
+8. **Tentar excluir guia com faciais**: Deve mostrar erro
+9. **Botão excluir não aparece**: Quando há faciais
+10. **Confirmação de encerramento**: Deve mostrar créditos restantes
+11. **Confirmação de exclusão**: Deve mostrar número da guia
+12. **Atualização de lista**: Deve recarregar após edição/exclusão
+13. **Reativação visual**: Status badge deve mudar de vermelho para verde
 
 ---
 

@@ -152,6 +152,14 @@ agenda-psi/
 - Paciente ou psicólogo podem registrar consultas (sem aprovação)
 - Psicólogo acessa apenas dados de pacientes vinculados
 
+## Funcionalidades de UX
+
+### Persistência de Abas
+- Aba selecionada persiste após recarregamento (F5)
+- URLs compartilháveis: `/dashboard/patient?tab=guides`
+- Compatível com navegação do navegador (voltar/avançar)
+- Sem necessidade de cookies ou localStorage
+
 ## Scripts Disponíveis
 
 - `npm run dev` - Inicia servidor de desenvolvimento
