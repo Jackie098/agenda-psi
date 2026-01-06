@@ -38,7 +38,7 @@ export function ReferencesManager() {
   const [linkedPsychologists, setLinkedPsychologists] = useState<LinkedPsychologist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [linkingReferenceId, setLinkingReferenceId] = useState<string | null>(null);
-  const [selectedPsychologistId, setSelectedPsychologistId] = useState<string>("");
+  const [selectedPsychologistIds, setSelectedPsychologistIds] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchData();
@@ -87,7 +87,9 @@ export function ReferencesManager() {
   };
 
   const handleLinkReference = async (referenceId: string) => {
-    if (!selectedPsychologistId) {
+    const selectedPsychId = selectedPsychologistIds[referenceId];
+    
+    if (!selectedPsychId) {
       toast({
         title: "Erro",
         description: "Selecione um psicólogo",
@@ -103,7 +105,7 @@ export function ReferencesManager() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          psychologistId: selectedPsychologistId,
+          psychologistId: selectedPsychId,
         }),
       });
 
@@ -123,7 +125,13 @@ export function ReferencesManager() {
         description: data.message || "A referência foi vinculada ao psicólogo com sucesso",
       });
 
-      setSelectedPsychologistId("");
+      // Limpar apenas a seleção desta referência específica
+      setSelectedPsychologistIds(prev => {
+        const updated = { ...prev };
+        delete updated[referenceId];
+        return updated;
+      });
+      
       fetchData();
     } catch (error) {
       toast({
@@ -134,6 +142,17 @@ export function ReferencesManager() {
     } finally {
       setLinkingReferenceId(null);
     }
+  };
+
+  // Obter psicólogos disponíveis para uma referência específica (excluindo já vinculados)
+  const getAvailablePsychologists = (currentReferenceId: string) => {
+    // IDs de psicólogos já vinculados a outras referências
+    const linkedPsychIds = references
+      .filter(ref => ref.linkedPsychologist && ref.id !== currentReferenceId)
+      .map(ref => ref.linkedPsychologist!.id);
+
+    // Filtrar psicólogos que não estão vinculados a nenhuma referência
+    return linkedPsychologists.filter(psych => !linkedPsychIds.includes(psych.id));
   };
 
   const handleUnlinkReference = async (referenceId: string) => {
@@ -219,25 +238,36 @@ export function ReferencesManager() {
                       Vincular ao psicólogo:
                     </label>
                     <Select
-                      value={selectedPsychologistId}
-                      onValueChange={setSelectedPsychologistId}
+                      value={selectedPsychologistIds[reference.id] || ""}
+                      onValueChange={(value) => 
+                        setSelectedPsychologistIds(prev => ({ ...prev, [reference.id]: value }))
+                      }
                       disabled={linkingReferenceId === reference.id}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um psicólogo" />
                       </SelectTrigger>
                       <SelectContent>
-                        {linkedPsychologists.map((psych) => (
+                        {getAvailablePsychologists(reference.id).map((psych) => (
                           <SelectItem key={psych.id} value={psych.id}>
                             {psych.user.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {getAvailablePsychologists(reference.id).length === 0 && (
+                      <p className="text-xs text-muted-foreground text-destructive">
+                        Todos os psicólogos vinculados já estão associados a outras referências
+                      </p>
+                    )}
                   </div>
                   <Button
                     onClick={() => handleLinkReference(reference.id)}
-                    disabled={linkingReferenceId === reference.id || !selectedPsychologistId}
+                    disabled={
+                      linkingReferenceId === reference.id || 
+                      !selectedPsychologistIds[reference.id] ||
+                      getAvailablePsychologists(reference.id).length === 0
+                    }
                     className="w-full"
                   >
                     {linkingReferenceId === reference.id ? "Vinculando..." : "Vincular Referência"}
