@@ -23,6 +23,7 @@ export default function PatientDashboard() {
   const { toast } = useToast();
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activitiesRefreshTrigger, setActivitiesRefreshTrigger] = useState(0);
   
   // Ler a aba da URL ou usar 'activities' como padrão
   const currentTab = searchParams.get("tab") || "activities";
@@ -62,6 +63,12 @@ export default function PatientDashboard() {
 
   const handleFacialSuccess = () => {
     fetchBalance();
+    setActivitiesRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleSessionSuccess = () => {
+    fetchBalance();
+    setActivitiesRefreshTrigger(prev => prev + 1);
   };
 
   const handleTabChange = (value: string) => {
@@ -132,7 +139,7 @@ export default function PatientDashboard() {
             <CardTitle className="text-sm font-medium">Registrar Consulta</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddSessionDialog onSuccess={fetchBalance} />
+            <AddSessionDialog onSuccess={handleSessionSuccess} />
           </CardContent>
         </Card>
 
@@ -157,7 +164,7 @@ export default function PatientDashboard() {
         </TabsList>
 
         <TabsContent value="activities" className="space-y-4">
-          <ActivityTimeline />
+          <ActivityTimeline refreshTrigger={activitiesRefreshTrigger} />
         </TabsContent>
 
         <TabsContent value="guides" className="space-y-4">

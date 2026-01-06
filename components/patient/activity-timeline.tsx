@@ -52,7 +52,11 @@ const activityTypeVariants: Record<string, "default" | "secondary" | "destructiv
   GUIDE_CREATED: "outline",
 };
 
-export function ActivityTimeline() {
+interface ActivityTimelineProps {
+  refreshTrigger?: number;
+}
+
+export function ActivityTimeline({ refreshTrigger }: ActivityTimelineProps) {
   const { toast } = useToast();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +69,7 @@ export function ActivityTimeline() {
 
   useEffect(() => {
     fetchActivities();
-  }, [filters]);
+  }, [filters, refreshTrigger]);
 
   const fetchActivities = async () => {
     setIsLoading(true);
