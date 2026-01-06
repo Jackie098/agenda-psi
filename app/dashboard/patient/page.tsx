@@ -14,6 +14,7 @@ import { GuidesList } from "@/components/patient/guides-list";
 import { PsychologistLinks } from "@/components/patient/psychologist-links";
 import { ReferencesManager } from "@/components/patient/references-manager";
 import { ActivityTimeline } from "@/components/patient/activity-timeline";
+import { AddSessionDialog } from "@/components/patient/add-session-dialog";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
@@ -96,7 +97,7 @@ export default function PatientDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
+      <div className="grid gap-6 md:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Saldo Atual</CardTitle>
@@ -123,6 +124,15 @@ export default function PatientDashboard() {
           </CardHeader>
           <CardContent>
             <FacialRegistration onSuccess={handleFacialSuccess} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Registrar Consulta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AddSessionDialog onSuccess={fetchBalance} />
           </CardContent>
         </Card>
 

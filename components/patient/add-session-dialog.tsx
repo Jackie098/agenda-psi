@@ -9,9 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 
 interface AddSessionDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 interface Reference {
@@ -40,8 +38,9 @@ interface PsychologistOption {
   referenceId?: string;
 }
 
-export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDialogProps) {
+export function AddSessionDialog({ onSuccess }: AddSessionDialogProps) {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [references, setReferences] = useState<Reference[]>([]);
   const [linkedPsychologists, setLinkedPsychologists] = useState<LinkedPsychologist[]>([]);
@@ -216,7 +215,8 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
         selectedOption: "",
       });
 
-      onSuccess();
+      onSuccess?.();
+      setOpen(false);
     } catch (error) {
       toast({
         title: "Erro",
@@ -229,7 +229,12 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Button onClick={() => setOpen(true)} className="w-full">
+        Registrar Consulta
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Registrar Consulta</DialogTitle>
@@ -339,7 +344,7 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => setOpen(false)}
               disabled={isLoading}
             >
               Cancelar
@@ -348,6 +353,7 @@ export function AddSessionDialog({ open, onOpenChange, onSuccess }: AddSessionDi
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

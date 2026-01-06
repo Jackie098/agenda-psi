@@ -154,6 +154,14 @@ agenda-psi/
 
 ## Funcionalidades de UX
 
+### Dashboard do Paciente
+- **Ações Rápidas**: Cards superiores com acesso rápido a:
+  - Saldo atual
+  - Registrar facial
+  - Registrar consulta
+  - Status da conta
+- **Abas Organizadas**: Histórico de Atividades, Guias, Psicólogos, Referências
+
 ### Persistência de Abas
 - Aba selecionada persiste após recarregamento (F5)
 - URLs compartilháveis: `/dashboard/patient?tab=guides`

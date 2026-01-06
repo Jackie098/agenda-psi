@@ -73,6 +73,8 @@ Todos os componentes do MVP foram implementados com sucesso seguindo o plano esp
 - ✅ Login (/auth/signin)
 - ✅ Registro (/auth/register)
 - ✅ Dashboard Paciente (/dashboard/patient)
+  - Cards de ação rápida (saldo, facial, consulta, status)
+  - Abas: Histórico, Guias, Psicólogos, Referências
 - ✅ Dashboard Psicólogo (/dashboard/psychologist)
 
 #### Componentes UI Base (ShadCN)
