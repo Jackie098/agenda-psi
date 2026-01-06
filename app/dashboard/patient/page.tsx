@@ -11,10 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { FacialRegistration } from "@/components/patient/facial-registration";
 import { GuidesList } from "@/components/patient/guides-list";
-import { SessionsList } from "@/components/patient/sessions-list";
 import { PsychologistLinks } from "@/components/patient/psychologist-links";
 import { ReferencesManager } from "@/components/patient/references-manager";
-import { FacialsHistory } from "@/components/patient/facials-history";
+import { ActivityTimeline } from "@/components/patient/activity-timeline";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
@@ -22,7 +21,6 @@ export default function PatientDashboard() {
   const { toast } = useToast();
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [facialsRefreshTrigger, setFacialsRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,7 +57,6 @@ export default function PatientDashboard() {
 
   const handleFacialSuccess = () => {
     fetchBalance();
-    setFacialsRefreshTrigger(prev => prev + 1);
   };
 
   if (status === "loading" || isLoading) {
@@ -130,25 +127,20 @@ export default function PatientDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="guides" className="space-y-4">
+      <Tabs defaultValue="activities" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="activities">Histórico de Atividades</TabsTrigger>
           <TabsTrigger value="guides">Guias</TabsTrigger>
-          <TabsTrigger value="sessions">Consultas</TabsTrigger>
-          <TabsTrigger value="facials">Histórico de Faciais</TabsTrigger>
           <TabsTrigger value="psychologists">Psicólogos</TabsTrigger>
           <TabsTrigger value="references">Referências</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="activities" className="space-y-4">
+          <ActivityTimeline />
+        </TabsContent>
+
         <TabsContent value="guides" className="space-y-4">
           <GuidesList />
-        </TabsContent>
-
-        <TabsContent value="sessions" className="space-y-4">
-          <SessionsList />
-        </TabsContent>
-
-        <TabsContent value="facials" className="space-y-4">
-          <FacialsHistory refreshTrigger={facialsRefreshTrigger} />
         </TabsContent>
 
         <TabsContent value="psychologists" className="space-y-4">

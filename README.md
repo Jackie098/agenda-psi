@@ -128,6 +128,22 @@ agenda-psi/
 - Sessões passadas são automaticamente atualizadas ao vincular
 - Um psicólogo real pode estar vinculado a apenas **uma referência por paciente**
 
+### Histórico de Atividades
+
+- **Timeline Unificada**: Faciais, consultas e eventos de guias em uma única visualização
+- **Filtros Avançados**: Por data (range) e tipo de atividade
+- **Eventos Automáticos**: Registro de criação, expiração e encerramento de guias
+- **Ordenação**: Cronológica decrescente (mais recente primeiro)
+- **Detalhes Completos**: Informações específicas para cada tipo de atividade
+
+### Gestão de Guias
+
+- **Edição de Data**: Alterar data de validade (qualquer data permitida, inclusive passado)
+- **Encerramento Manual**: Encerrar guia antecipadamente (créditos restantes são perdidos)
+- **Exclusão**: Remover guia apenas se não tiver faciais registradas
+- **Validação Automática**: Status atualizado automaticamente ao listar guias
+- **Eventos Registrados**: Todas as ações geram eventos no histórico de atividades
+
 ### Restrições
 
 - Aviso se mais de 1 facial por dia (não bloqueia)
@@ -152,8 +168,11 @@ agenda-psi/
 - `GET /api/facials` - Listar histórico de faciais
 - `POST /api/sessions` - Registrar consulta
 - `GET /api/sessions` - Listar consultas
+- `GET /api/activities` - Listar histórico consolidado de atividades (com filtros)
 - `GET /api/guides` - Listar guias
 - `POST /api/guides` - Criar nova guia
+- `PATCH /api/guides/:id` - Editar guia (data de validade ou encerrar)
+- `DELETE /api/guides/:id` - Excluir guia (apenas se sem faciais)
 - `GET /api/balance` - Consultar saldo
 - `POST /api/references` - Criar referência de psicólogo
 - `GET /api/references` - Listar referências

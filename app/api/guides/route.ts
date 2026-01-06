@@ -26,14 +26,29 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "asc" },
     });
 
-    // Atualizar status de guias expiradas
+    // Atualizar status de guias expiradas e criar logs
     const now = new Date();
     for (const guide of guides) {
       if (guide.status === GuideStatus.ACTIVE && guide.expirationDate < now) {
-        await prisma.guide.update({
-          where: { id: guide.id },
-          data: { status: GuideStatus.EXPIRED },
-        });
+        await prisma.$transaction([
+          prisma.guide.update({
+            where: { id: guide.id },
+            data: { status: GuideStatus.EXPIRED },
+          }),
+          prisma.activityLog.create({
+            data: {
+              type: "GUIDE_EXPIRED",
+              description: `Guia ${guide.number} expirou`,
+              metadata: {
+                guideNumber: guide.number,
+                company: guide.company.name,
+                remainingCredits: guide.totalCredits - guide.usedCredits,
+              },
+              occurredAt: now,
+              patientId: guide.patientId,
+            },
+          }),
+        ]);
       }
     }
 
@@ -61,20 +76,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const guide = await prisma.guide.create({
-      data: {
-        number: data.number,
-        totalCredits: data.totalCredits,
-        expirationDate: new Date(data.expirationDate),
-        patientId,
-        companyId: data.companyId,
-      },
-      include: {
-        company: true,
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      const guide = await tx.guide.create({
+        data: {
+          number: data.number,
+          totalCredits: data.totalCredits,
+          expirationDate: new Date(data.expirationDate),
+          patientId,
+          companyId: data.companyId,
+        },
+        include: {
+          company: true,
+        },
+      });
+
+      // Criar log de criação da guia
+      await tx.activityLog.create({
+        data: {
+          type: "GUIDE_CREATED",
+          description: `Guia ${guide.number} criada`,
+          metadata: {
+            guideNumber: guide.number,
+            company: guide.company.name,
+            totalCredits: guide.totalCredits,
+            expirationDate: guide.expirationDate.toISOString(),
+          },
+          occurredAt: new Date(),
+          patientId,
+        },
+      });
+
+      return guide;
     });
 
-    return NextResponse.json(guide);
+    return NextResponse.json(result);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
