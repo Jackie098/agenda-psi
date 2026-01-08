@@ -1,35 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+import { ActivityTimeline } from "@/components/patient/activity-timeline";
+import { AddSessionDialog } from "@/components/patient/add-session-dialog";
 import { FacialRegistration } from "@/components/patient/facial-registration";
 import { GuidesList } from "@/components/patient/guides-list";
 import { PsychologistLinks } from "@/components/patient/psychologist-links";
 import { ReferencesManager } from "@/components/patient/references-manager";
-import { ActivityTimeline } from "@/components/patient/activity-timeline";
-import { AddSessionDialog } from "@/components/patient/add-session-dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import {
-  Wallet,
-  Camera,
   CalendarPlus,
-  TrendingUp,
+  Camera,
   TrendingDown,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-export default function PatientDashboard() {
+function PatientDashboardContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -247,5 +239,27 @@ export default function PatientDashboard() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function PatientDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-12 w-64 mb-2" />
+          <Skeleton className="h-5 w-48 mb-8" />
+          <div className="grid gap-6 md:grid-cols-3 mb-8">
+            <Skeleton className="h-36" />
+            <Skeleton className="h-44" />
+            <Skeleton className="h-44" />
+          </div>
+          <Skeleton className="h-10 w-full max-w-md mb-4" />
+          <Skeleton className="h-64" />
+        </div>
+      }
+    >
+      <PatientDashboardContent />
+    </Suspense>
   );
 }

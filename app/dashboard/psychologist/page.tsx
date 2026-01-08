@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { PatientSearch } from "@/components/psychologist/patient-search";
 import { GuideSearch } from "@/components/psychologist/guide-search";
 import { LinkRequests } from "@/components/psychologist/link-requests";
 
-export default function PsychologistDashboard() {
+function PsychologistDashboardContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,3 +91,21 @@ export default function PsychologistDashboard() {
   );
 }
 
+export default function PsychologistDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-12 w-64 mb-8" />
+          <div className="grid gap-6 md:grid-cols-3 mb-8">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </div>
+        </div>
+      }
+    >
+      <PsychologistDashboardContent />
+    </Suspense>
+  );
+}

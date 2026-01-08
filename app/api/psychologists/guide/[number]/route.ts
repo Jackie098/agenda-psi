@@ -4,13 +4,13 @@ import { requirePsychologist } from "@/lib/auth-helpers";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { number: string } }
+  { params }: { params: Promise<{ number: string }> }
 ) {
   try {
     const { psychologistId } = await requirePsychologist();
 
     const guide = await prisma.guide.findUnique({
-      where: { number: params.number },
+      where: { number: (await params).number },
       include: {
         company: true,
         patient: {
@@ -67,4 +67,3 @@ export async function GET(
     );
   }
 }
-

@@ -9,9 +9,13 @@ const updateGuideSchema = z.object({
   status: z.enum(["EXPIRED"]).optional(),
 });
 
+const paramsSchema = z.object({
+  id: z.string(),
+});
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { patientId } = await requirePatient();
@@ -20,14 +24,17 @@ export async function PATCH(
 
     // Verificar se a guia existe e pertence ao paciente
     const guide = await prisma.guide.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         company: true,
       },
     });
 
     if (!guide) {
-      return NextResponse.json({ error: "Guia não encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Guia não encontrada" },
+        { status: 404 }
+      );
     }
 
     if (guide.patientId !== patientId) {
@@ -68,7 +75,7 @@ export async function PATCH(
     // Atualizar guia
     const updatedGuide = await prisma.$transaction(async (tx) => {
       const updated = await tx.guide.update({
-        where: { id: params.id },
+        where: { id: (await params).id },
         data: updateData,
         include: {
           company: true,
@@ -117,21 +124,24 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { patientId } = await requirePatient();
 
     // Verificar se a guia existe e pertence ao paciente
     const guide = await prisma.guide.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         facialRecords: true,
       },
     });
 
     if (!guide) {
-      return NextResponse.json({ error: "Guia não encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Guia não encontrada" },
+        { status: 404 }
+      );
     }
 
     if (guide.patientId !== patientId) {
@@ -151,7 +161,7 @@ export async function DELETE(
 
     // Excluir guia
     await prisma.guide.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({
@@ -165,4 +175,3 @@ export async function DELETE(
     );
   }
 }
-
