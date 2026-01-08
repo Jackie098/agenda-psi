@@ -9,7 +9,7 @@ const linkReferenceSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { patientId } = await requirePatient();
@@ -18,7 +18,7 @@ export async function PUT(
 
     // Verificar se a referência existe e pertence ao paciente
     const reference = await prisma.psychologistReference.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!reference) {
@@ -69,8 +69,9 @@ export async function PUT(
 
     if (!link) {
       return NextResponse.json(
-        { 
-          error: "Você precisa ter um vínculo aceito com este psicólogo antes de vincular a referência" 
+        {
+          error:
+            "Você precisa ter um vínculo aceito com este psicólogo antes de vincular a referência",
         },
         { status: 400 }
       );
@@ -84,10 +85,10 @@ export async function PUT(
       },
     });
 
-    if (existingReference && existingReference.id !== params.id) {
+    if (existingReference && existingReference.id !== (await params).id) {
       return NextResponse.json(
-        { 
-          error: "Você já tem outra referência vinculada a este psicólogo" 
+        {
+          error: "Você já tem outra referência vinculada a este psicólogo",
         },
         { status: 400 }
       );
@@ -95,7 +96,7 @@ export async function PUT(
 
     // Atualizar a referência
     const updatedReference = await prisma.psychologistReference.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         linkedPsychologistId: data.psychologistId,
       },
@@ -111,7 +112,7 @@ export async function PUT(
     // Atualizar todas as sessões que usam esta referência para também incluir o psychologistId
     await prisma.session.updateMany({
       where: {
-        psychologistReferenceId: params.id,
+        psychologistReferenceId: (await params).id,
         psychologistId: null,
       },
       data: {
@@ -121,7 +122,8 @@ export async function PUT(
 
     return NextResponse.json({
       ...updatedReference,
-      message: "Referência vinculada com sucesso! As consultas anteriores foram atualizadas.",
+      message:
+        "Referência vinculada com sucesso! As consultas anteriores foram atualizadas.",
     });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -141,14 +143,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { patientId } = await requirePatient();
 
     // Verificar se a referência existe e pertence ao paciente
     const reference = await prisma.psychologistReference.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!reference) {
@@ -174,7 +176,7 @@ export async function DELETE(
 
     // Desvincular a referência
     const updatedReference = await prisma.psychologistReference.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         linkedPsychologistId: null,
       },
@@ -183,7 +185,7 @@ export async function DELETE(
     // Remover o psychologistId das sessões que usam apenas esta referência
     await prisma.session.updateMany({
       where: {
-        psychologistReferenceId: params.id,
+        psychologistReferenceId: (await params).id,
       },
       data: {
         psychologistId: null,
@@ -202,4 +204,3 @@ export async function DELETE(
     );
   }
 }
-
