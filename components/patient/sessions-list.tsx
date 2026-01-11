@@ -1,11 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { AddSessionDialog } from "./add-session-dialog";
 
@@ -84,7 +97,8 @@ export function SessionsList() {
           <CardHeader>
             <CardTitle>Histórico de Consultas</CardTitle>
             <CardDescription>
-              Total: {sessions.length} {sessions.length === 1 ? "consulta" : "consultas"}
+              Total: {sessions.length}{" "}
+              {sessions.length === 1 ? "consulta" : "consultas"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,15 +119,24 @@ export function SessionsList() {
                       {new Date(session.scheduledAt).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell>
-                      {session.psychologist?.user.name || session.psychologistReference?.name}
+                      {session.psychologist?.user.name ||
+                        session.psychologistReference?.name}
                     </TableCell>
                     <TableCell>{session.duration} min</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{session.creditsUsed}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={session.registeredBy === "PATIENT" ? "default" : "outline"}>
-                        {session.registeredBy === "PATIENT" ? "Você" : "Psicólogo"}
+                      <Badge
+                        variant={
+                          session.registeredBy === "PATIENT"
+                            ? "default"
+                            : "outline"
+                        }
+                      >
+                        {session.registeredBy === "PATIENT"
+                          ? "Você"
+                          : "Psicólogo"}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -125,14 +148,10 @@ export function SessionsList() {
       )}
 
       <AddSessionDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
         onSuccess={() => {
           fetchSessions();
-          setShowAddDialog(false);
         }}
       />
     </div>
   );
 }
-

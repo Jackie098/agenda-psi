@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,10 +11,14 @@ import { PatientSearch } from "@/components/psychologist/patient-search";
 import { GuideSearch } from "@/components/psychologist/guide-search";
 import { LinkRequests } from "@/components/psychologist/link-requests";
 
-export default function PsychologistDashboard() {
+function PsychologistDashboardContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Ler a aba da URL ou usar 'patients' como padrão
+  const currentTab = searchParams.get("tab") || "patients";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -25,6 +29,13 @@ export default function PsychologistDashboard() {
       setIsLoading(false);
     }
   }, [status, session, router]);
+
+  const handleTabChange = (value: string) => {
+    // Atualizar a URL com o parâmetro tab
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", value);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
   if (status === "loading" || isLoading) {
     return (
@@ -52,7 +63,7 @@ export default function PsychologistDashboard() {
         </div>
       </div>
 
-      <Tabs defaultValue="patients" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="patients">Meus Pacientes</TabsTrigger>
           <TabsTrigger value="search">Buscar Paciente</TabsTrigger>
@@ -80,3 +91,21 @@ export default function PsychologistDashboard() {
   );
 }
 
+export default function PsychologistDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-12 w-64 mb-8" />
+          <div className="grid gap-6 md:grid-cols-3 mb-8">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </div>
+        </div>
+      }
+    >
+      <PsychologistDashboardContent />
+    </Suspense>
+  );
+}

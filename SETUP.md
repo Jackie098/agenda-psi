@@ -66,16 +66,19 @@ Acesse: [http://localhost:3000](http://localhost:3000)
 Após executar o seed, você pode fazer login com:
 
 ### Paciente
+
 - **Email**: paciente@example.com
 - **WhatsApp**: 11999999999
 
 ### Psicólogo
+
 - **Email**: psicologo@example.com
 - **WhatsApp**: 11988888888
 
 ## 📋 Funcionalidades Implementadas
 
 ### Para Pacientes
+
 ✅ Dashboard com saldo de créditos  
 ✅ Registro de faciais (adiciona créditos)  
 ✅ Gerenciamento de guias (múltiplas guias simultâneas)  
@@ -84,17 +87,19 @@ Após executar o seed, você pode fazer login com:
 ✅ Gerenciamento de vínculos com psicólogos  
 ✅ Criação de referências de psicólogos  
 ✅ Saldo negativo permitido  
-✅ Aviso ao registrar mais de 1 facial por dia  
+✅ Aviso ao registrar mais de 1 facial por dia
 
 ### Para Psicólogos
+
 ✅ Dashboard com lista de pacientes vinculados  
 ✅ Busca de pacientes por email/WhatsApp  
 ✅ Consulta de guias por número  
 ✅ Visualização de saldo e guias dos pacientes  
 ✅ Gerenciamento de solicitações de vínculo  
-✅ Acesso apenas a dados de pacientes vinculados  
+✅ Acesso apenas a dados de pacientes vinculados
 
 ### Sistema
+
 ✅ Autenticação com NextAuth.js  
 ✅ Roles (Paciente/Psicólogo)  
 ✅ API REST completa  
@@ -102,7 +107,7 @@ Após executar o seed, você pode fazer login com:
 ✅ UI moderna com ShadCN/UI  
 ✅ Responsivo (mobile-first)  
 ✅ Notificações toast  
-✅ Tratamento de erros  
+✅ Tratamento de erros
 
 ## 🔧 Comandos Úteis
 
@@ -130,6 +135,7 @@ npm run lint
 ## 📊 Estrutura do Banco de Dados
 
 ### Tabelas Principais
+
 - `users` - Usuários do sistema (base)
 - `patients` - Perfil de pacientes
 - `psychologists` - Perfil de psicólogos
@@ -143,34 +149,44 @@ npm run lint
 ## 🎯 Regras de Negócio
 
 ### Sistema de Créditos
+
 1. **Facial → Guia → Saldo**: Bater facial consome 1 crédito da guia e adiciona 1 ao saldo
 2. **Consulta → Saldo**: Consulta subtrai do saldo (1 para 30min, 2 para 50min)
 3. **Saldo negativo**: Permitido sem limite
 4. **Seleção automática de guia**: FIFO (First-In-First-Out)
 
 ### Restrições
+
 - Aviso (não bloqueio) se mais de 1 facial por dia
 - Guias têm data de validade obrigatória
 - Múltiplas guias ativas simultâneas permitidas
+- Seleção automática de guia (FIFO) ou manual quando múltiplas guias ativas
+- Histórico completo de faciais com data, hora e guia utilizada
 - Paciente ou psicólogo podem registrar consultas (sem aprovação)
 - Psicólogo só acessa dados de pacientes vinculados
+- Vínculos podem ser solicitados por email ou WhatsApp
+- Referências de psicólogos podem ser vinculadas a psicólogos reais
 
 ## 🐛 Troubleshooting
 
 ### Erro: "Can't reach database server"
+
 - Verifique se o PostgreSQL está rodando
 - Se usando Docker: `docker-compose up -d`
 - Verifique a `DATABASE_URL` no arquivo `.env`
 
 ### Erro: "NextAuth configuration error"
+
 - Verifique se `NEXTAUTH_SECRET` está definido no `.env`
 - Gere uma nova chave com: `openssl rand -base64 32`
 
 ### Erro ao fazer login
+
 - Verifique se executou o seed: `npm run db:seed`
 - Tente criar uma nova conta pela interface
 
 ### Porta 3000 já em uso
+
 ```bash
 # Encontrar processo usando a porta
 lsof -i :3000
@@ -198,8 +214,8 @@ PORT=3001 npm run dev
 ## 📞 Suporte
 
 Se encontrar problemas, verifique:
+
 1. Logs do terminal onde o `npm run dev` está rodando
 2. Console do navegador (F12)
 3. Logs do Prisma Studio
 4. Arquivo `.env` está configurado corretamente
-

@@ -37,6 +37,14 @@ enum RegisteredBy {
   PSYCHOLOGIST
 }
 
+enum ActivityType {
+  FACIAL
+  SESSION
+  GUIDE_EXPIRED
+  GUIDE_CLOSED
+  GUIDE_CREATED
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -57,12 +65,13 @@ model Patient {
   balance   Int      @default(0) // Pode ser negativo
   createdAt DateTime @default(now())
 
-  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guides                    Guide[]
-  facialRecords             FacialRecord[]
-  sessions                  Session[]
-  psychologistReferences    PsychologistReference[]
-  patientPsychologistLinks  PatientPsychologistLink[]
+  user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guides                   Guide[]
+  facialRecords            FacialRecord[]
+  sessions                 Session[]
+  psychologistReferences   PsychologistReference[]
+  patientPsychologistLinks PatientPsychologistLink[]
+  activityLogs             ActivityLog[]
 
   @@map("patients")
 }
@@ -72,10 +81,10 @@ model Psychologist {
   userId    String   @unique
   createdAt DateTime @default(now())
 
-  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessions                   Session[]
-  linkedReferences           PsychologistReference[]
-  psychologistPatientLinks   PatientPsychologistLink[]
+  user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions                 Session[]
+  linkedReferences         PsychologistReference[]
+  psychologistPatientLinks PatientPsychologistLink[]
 
   @@map("psychologists")
 }
@@ -138,9 +147,9 @@ model Session {
   registeredBy            RegisteredBy
   createdAt               DateTime     @default(now())
 
-  patient                Patient                @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  psychologist           Psychologist?          @relation(fields: [psychologistId], references: [id])
-  psychologistReference  PsychologistReference? @relation(fields: [psychologistReferenceId], references: [id])
+  patient               Patient                @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist          Psychologist?          @relation(fields: [psychologistId], references: [id])
+  psychologistReference PsychologistReference? @relation(fields: [psychologistReferenceId], references: [id])
 
   @@index([patientId])
   @@index([psychologistId])
@@ -149,17 +158,19 @@ model Session {
 }
 
 model PsychologistReference {
-  id                    String   @id @default(cuid())
-  name                  String
-  patientId             String
-  linkedPsychologistId  String?  @unique
-  createdAt             DateTime @default(now())
+  id                   String   @id @default(cuid())
+  name                 String
+  patientId            String
+  linkedPsychologistId String?
+  createdAt            DateTime @default(now())
 
   patient            Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   linkedPsychologist Psychologist? @relation(fields: [linkedPsychologistId], references: [id])
   sessions           Session[]
 
+  @@unique([patientId, linkedPsychologistId])
   @@index([patientId])
+  @@index([linkedPsychologistId])
   @@map("psychologist_references")
 }
 
@@ -182,3 +193,19 @@ model PatientPsychologistLink {
   @@map("patient_psychologist_links")
 }
 
+model ActivityLog {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  metadata    Json?
+  occurredAt  DateTime
+  patientId   String
+  createdAt   DateTime     @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([type])
+  @@index([occurredAt])
+  @@map("activity_logs")
+}

@@ -108,14 +108,65 @@ agenda-psi/
 - **Facial → Guia → Saldo**: Bater facial consome 1 crédito da guia e adiciona 1 ao saldo
 - **Consulta → Saldo**: Subtrair do saldo (1 para 30min, 2 para 50min)
 - **Saldo negativo**: Permitido sem limite
-- **Seleção automática de guia**: FIFO (First-In-First-Out)
+- **Seleção de guia**: 
+  - Automática (FIFO - First-In-First-Out) quando há apenas uma guia ativa
+  - Manual quando há múltiplas guias ativas (padrão: mais antiga)
+- **Histórico de faciais**: Registro completo com data, hora e guia utilizada
+
+### Vínculos Paciente-Psicólogo
+
+- Solicitação pode ser feita por **email ou WhatsApp** de ambos os lados
+- Requer aceitação da outra parte
+- **Aceitação automática** quando há solicitações mútuas
+- **Bloqueio temporário** de 7 dias após rejeição
+- Validações contra duplicatas e auto-vinculação
+
+### Referências de Psicólogos
+
+- Paciente pode criar referências mesmo sem vínculo estabelecido
+- Referências podem ser **vinculadas a psicólogos reais** após estabelecer vínculo
+- Sessões passadas são automaticamente atualizadas ao vincular
+- Um psicólogo real pode estar vinculado a apenas **uma referência por paciente**
+
+### Histórico de Atividades
+
+- **Timeline Unificada**: Faciais, consultas e eventos de guias em uma única visualização
+- **Filtros Avançados**: Por data (range) e tipo de atividade
+- **Eventos Automáticos**: Registro de criação, expiração e encerramento de guias
+- **Ordenação**: Cronológica decrescente (mais recente primeiro)
+- **Detalhes Completos**: Informações específicas para cada tipo de atividade
+
+### Gestão de Guias
+
+- **Edição de Data**: Alterar data de validade (qualquer data permitida, inclusive passado)
+- **Encerramento Manual**: Encerrar guia antecipadamente (créditos restantes são perdidos)
+- **Exclusão**: Remover guia apenas se não tiver faciais registradas
+- **Validação Automática**: Status atualizado automaticamente ao listar guias
+- **Eventos Registrados**: Todas as ações geram eventos no histórico de atividades
 
 ### Restrições
 
-- Aviso se mais de 1 facial por dia
+- Aviso se mais de 1 facial por dia (não bloqueia)
 - Guias têm data de validade obrigatória
 - Múltiplas guias ativas simultâneas permitidas
 - Paciente ou psicólogo podem registrar consultas (sem aprovação)
+- Psicólogo acessa apenas dados de pacientes vinculados
+
+## Funcionalidades de UX
+
+### Dashboard do Paciente
+- **Ações Rápidas**: Cards superiores com acesso rápido a:
+  - Saldo atual
+  - Registrar facial
+  - Registrar consulta
+  - Status da conta
+- **Abas Organizadas**: Histórico de Atividades, Guias, Psicólogos, Referências
+
+### Persistência de Abas
+- Aba selecionada persiste após recarregamento (F5)
+- URLs compartilháveis: `/dashboard/patient?tab=guides`
+- Compatível com navegação do navegador (voltar/avançar)
+- Sem necessidade de cookies ou localStorage
 
 ## Scripts Disponíveis
 
@@ -129,11 +180,20 @@ agenda-psi/
 
 ### Pacientes
 
-- `POST /api/facials` - Registrar facial
+- `POST /api/facials` - Registrar facial (com seleção opcional de guia)
+- `GET /api/facials` - Listar histórico de faciais
 - `POST /api/sessions` - Registrar consulta
+- `GET /api/sessions` - Listar consultas
+- `GET /api/activities` - Listar histórico consolidado de atividades (com filtros)
 - `GET /api/guides` - Listar guias
 - `POST /api/guides` - Criar nova guia
+- `PATCH /api/guides/:id` - Editar guia (data de validade ou encerrar)
+- `DELETE /api/guides/:id` - Excluir guia (apenas se sem faciais)
 - `GET /api/balance` - Consultar saldo
+- `POST /api/references` - Criar referência de psicólogo
+- `GET /api/references` - Listar referências
+- `PUT /api/references/:id/link` - Vincular referência a psicólogo real
+- `DELETE /api/references/:id/link` - Desvincular referência
 
 ### Psicólogos
 
@@ -142,9 +202,10 @@ agenda-psi/
 - `POST /api/sessions` - Registrar consulta de paciente
 - `GET /api/psychologists/patients` - Listar pacientes vinculados
 
-### Ambos
+### Vínculos (Ambos)
 
-- `POST /api/links` - Solicitar vínculo
-- `PUT /api/links/:id` - Aceitar/rejeitar vínculo
+- `POST /api/links/request` - Solicitar vínculo por email/WhatsApp
 - `GET /api/links` - Listar vínculos
+- `PUT /api/links/:id` - Aceitar/rejeitar vínculo
+- `DELETE /api/links/:id` - Remover vínculo
 
